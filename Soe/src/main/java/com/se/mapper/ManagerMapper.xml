@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.se.mapper.ManagerMapper">
+    <!--    老师查询类的SQL语句，包括级联查询老师的多个班级-->
+    <resultMap id="teacher" type="com.se.pojo.Teacher">
+        <id property="id" column="id"/>
+        <result property="username" column="username"/>
+        <result property="email" column="email"/>
+        <result property="department" column="department"/>
+        <collection property="classes" column="id"
+                    select="com.se.mapper.ManagerMapper.selectClass"/>
+    </resultMap>
+    <resultMap id="classMap" type="com.se.pojo.Class">
+        <result property="teacherId" column="teacher_id"/>
+        <result property="classId" column="class_id"/>
+    </resultMap>
+    <select id="selectAllTeacher" resultMap="teacher">
+        select teacher.id,teacher.username,teacher.email,teacher.department from teacher;
+    </select>
+    <select id="selectClass" resultMap="classMap">
+        select teacher_class.class_id from teacher_class where teacher_id=#{id};
+    </select>
+
+    <!--    查询班长的信息-->
+    <resultMap id="selectClassLeader" type="com.se.pojo.ClassLeader">
+        <id property="id" column="id"/>
+        <result property="username" column="username"/>
+        <result property="email" column="email"/>
+        <result property="classId" column="classid"/>
+        <result property="department" column="department"/>
+    </resultMap>
+    <select id="selectAllClassLeader" resultMap="com.se.mapper.ManagerMapper.selectClassLeader">
+        select id,username,email,classid,department from classleader;
+    </select>
+
+    <!--    查询密码-->
+    <select id="findPassword" parameterType="java.lang.String" resultType="java.lang.String">
+        select password from ${arg1} where username=#{arg0};
+    </select>
+
+    <!--    更改密码-->
+    <update id="changeNewPassword">
+        update ${arg2} set password=#{arg1}  where username=#{arg0}
+    </update>
+
+    <!--    删除用户或者订单-->
+    <delete id="delete" parameterType="java.lang.String">
+        delete from ${arg1} where
+        <if test="arg1 =='approval'">
+            id=#{arg0};
+        </if>
+        <if test="arg1 =='books'">
+            id=#{arg0};
+        </if>
+        <if test="arg1!='approval' and arg1!='books'">
+            username=#{arg0};
+        </if>
+    </delete>
+
+    <!--    查询订单-->
+    <select id="selectAllOrder" resultType="com.se.pojo.Order">
+        select a.id as id,b.book_name as bookName,t.username as teacherName,
+             a.quantity,a.toclass as classId,a.pass,b.price from approval a,books b,teacher t where
+             a.book_id=b.id and a.teacher_id=t.id;
+    </select>
+
+    <!--    修改订单状态-->
+    <update id="approval">
+        update approval set pass=#{arg1} where approval.id=#{arg0};
+    </update>
+
+    <!--    获取发放图书列表-->
+    <select id="getBooks" resultType="com.se.pojo.GrantBooks">
+        select a.id as id,b.book_name as bookName,t.username as teacherName,
+             a.quantity,a.toclass as classId,b.price from approval a,books b,teacher t where
+             a.book_id=b.id and a.teacher_id=t.id and pass=1;
+    </select>
+    <!--    获取所有图书-->
+    <select id="books" resultType="com.se.pojo.Book">
+        select id,book_name as bookName,book_quantity as bookQuantity,press, price from books;
+    </select>
+
+    <!--    扣减图书-->
+    <update id="deduction">
+        update books set book_quantity=book_quantity-#{arg1} where id=exists(
+        select approval.book_id from approval where approval.id=#{arg0})
+    </update>
+
+    <!--    改变图书余量-->
+    <update id="changeBookNum">
+        update books set book_quantity=#{arg1} where id=#{arg0}
+    </update>
+
+    <!--    增加新图书-->
+    <insert id="addNewBook">
+        insert into books(book_name, book_quantity, press, price) values (#{arg0},#{arg1},#{arg2},#{arg3})
+    </insert>
+
+    <!--    发放图书-->
+    <insert id="sendBook">
+        insert into `grant`(order_id, grant_time, grant_place) values (#{arg0},#{arg1},#{arg2})
+    </insert>
+
+    <!--    查询所有通过的订单-->
+    <select id="selectAllPassOrder" resultType="com.se.pojo.Order">
+        select a.id as id,b.book_name as bookName,t.username as teacherName,
+             a.quantity,a.toclass as classId,a.pass,b.price,g.grant_place as
+            grantPlace,g.grant_time as grantTime from approval a,books b,teacher t,`grant` g where
+             a.book_id=b.id and a.teacher_id=t.id and a.pass=3 and g.order_id=a.id;
+    </select>
+
+    <!--更新班长信息-->
+    <update id="updateClassLeaderInfo">
+        update classleader set classid=#{arg1},department=#{arg2},email=#{arg3} where username=#{arg0}
+    </update>
+    <!--更新老师信息-->
+    <update id="updateTeacherInfo">
+        update teacher set department=#{arg1},email=#{arg2} where username=#{arg0}
+    </update>
+    <!--更新班长信息，一部分功能-->
+    <insert id="updateClasses">
+        insert into teacher_class(teacher_id, class_id) VALUES (#{arg0},#{arg1})
+    </insert>
+
+    <!--    通过老师的用户名来找出teacherId-->
+    <select id="selectTeacherId" parameterType="java.lang.String" resultType="java.lang.Integer">
+        select teacher.id from teacher where teacher.username=#{arg0}
+    </select>
+
+    <!--    删除班长-->
+    <delete id="deleteClass">
+        delete from teacher_class where teacher_id=#{arg0};
+    </delete>
+</mapper>

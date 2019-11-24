@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.se.mapper.ClassLeaderMapper">
+
+    <select id="selectAllPassOrder" resultType="com.se.pojo.Order">
+        select a.id as id,b.book_name as bookName,t.username as teacherName,
+             a.quantity,a.toclass as classId,a.pass,b.price,g.grant_place as
+            grantPlace,g.grant_time as grantTime from classleader cl, approval a,books b,teacher t,`grant` g where
+             a.book_id=b.id and a.teacher_id=t.id and a.pass=3 and cl.username=#{arg0} and cl.classid=a.toclass;
+    </select>
+
+</mapper>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.se.mapper.UserMapper">
+    <insert id="uploadTeacher" parameterType="com.se.pojo.User">
+        insert into teacher (username,password,email) values(#{username},#{password},#{email})
+    </insert>
+    <insert id="uploadClassLeader" parameterType="com.se.pojo.User">
+        insert into classleader(username,password,email) values(#{username},#{password},#{email})
+    </insert>
+    <insert id="uploadManager" parameterType="com.se.pojo.User">
+        insert into manager(username,password,email) values(#{username},#{password},#{email})
+    </insert>
+    <select id="selectTeacherPassword" resultType="java.lang.String" parameterType="user">
+        select password from teacher where username=#{username}
+    </select>
+    <select id="selectManagerPassword" resultType="java.lang.String" parameterType="user">
+        select password from manager where username=#{username}
+    </select>
+    <select id="selectClassLeaderPassword" resultType="java.lang.String" parameterType="user">
+        select password from classleader where username=#{username}
+    </select>
+</mapper>

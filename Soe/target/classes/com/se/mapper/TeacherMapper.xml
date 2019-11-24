@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.se.mapper.TeacherMapper">
+
+    <select id="selectAllPassOrder" resultType="com.se.pojo.Order">
+        select a.id as id,b.book_name as bookName,t.username as teacherName,
+             a.quantity,a.toclass as classId,a.pass,b.price,g.grant_place as
+            grantPlace,g.grant_time as grantTime from approval a,books b,teacher t,`grant` g where
+             a.book_id=b.id and a.teacher_id=t.id and a.pass=3 and t.username=#{arg0};
+    </select>
+
+    <!--    获取所有图书-->
+    <select id="books" resultType="com.se.pojo.Book">
+        select id,book_name as bookName,book_quantity as bookQuantity,press, price from books;
+    </select>
+
+    <!--    查询订单-->
+    <select id="selectAllOrder" resultType="com.se.pojo.Order">
+        select a.id as id,b.book_name as bookName,t.username as teacherName,
+             a.quantity,a.toclass as classId,a.pass,b.price from approval a,books b,teacher t where
+             a.book_id=b.id and a.teacher_id=t.id and t.username=#{arg0};
+    </select>
+
+    <insert id="insertOrder">
+        insert into approval(book_id, teacher_id, quantity, toclass,pass) VALUES (#{arg1},#{arg0},#{arg2},#{arg3},2);
+    </insert>
+
+    <!--    查询班长的信息-->
+    <resultMap id="selectClassLeader" type="com.se.pojo.ClassLeader">
+        <id property="id" column="id"/>
+        <result property="username" column="username"/>
+        <result property="email" column="email"/>
+        <result property="classId" column="classid"/>
+        <result property="department" column="department"/>
+    </resultMap>
+    <select id="selectAllClassLeader" resultMap="com.se.mapper.TeacherMapper.selectClassLeader">
+        select id,username,email,classid,department from classleader c,teacher_class tc where tc.teacher_id=#{id} and
+        tc.class_id=c.classid;
+    </select>
+</mapper>

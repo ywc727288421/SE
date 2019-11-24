@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:mybatis="http://mybatis.org/schema/mybatis-spring"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context.xsd
+       http://www.springframework.org/schema/tx
+       http://www.springframework.org/schema/tx/spring-tx.xsd
+       http://mybatis.org/schema/mybatis-spring
+       http://mybatis.org/schema/mybatis-spring.xsd">
+
+    <!-- 基于注解的方式完成IOC 容器对bean的管理,除去controller的所有组件 -->
+    <!--指明要要扫描的包及其子包  -->
+    <context:component-scan base-package="com.*"/>
+    <context:component-scan base-package="com.se.server"/>
+    <context:annotation-config/>
+
+
+    <!--配置数据源-->
+    <context:property-placeholder location="classpath:mybatis/jdbc.properties"/>
+    <bean id="dataSource" class="org.apache.commons.dbcp2.BasicDataSource">
+        <property name="driverClassName" value="com.mysql.cj.jdbc.Driver"/>
+        <property name="url" value="${database.url}"/>
+        <property name="username" value="${database.username}"/>
+        <property name="password" value="${database.password}"/>
+    </bean>
+
+    <!--整合mybatis 目的：管理所有的组件mapper-->
+    <!--配置sqlSessionFactory  此处就可将原先的mybatis.xml-->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"/>
+        <!--指明mybatis中配置文件的位置-->
+        <property name="typeAliasesPackage" value="com.se.pojo"/>
+    </bean>
+
+    <!--    自动包扫描mapper文件-->
+    <mybatis:scan base-package="com.se.mapper"/>
+
+    <!--step 2: 配置事务管理器 并开启注解式事务-->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <constructor-arg name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <!--此处，如果事务管理器是默认名称，则可以写成!-->
+    <tx:annotation-driven transaction-manager="transactionManager"/>
+</beans>
